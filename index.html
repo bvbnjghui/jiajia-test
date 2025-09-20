@@ -4,806 +4,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日的花費追蹤器</title>
+    <title>每日的花費追蹤器 (Alpine.js)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-        }
-
-        .progress-bar {
-            transition: all 0.5s ease;
-        }
-
-        .character-animation {
-            transition: all 0.8s ease;
-        }
-
-        .bounce-in {
-            animation: bounceIn 0.6s ease;
-        }
-
-        @keyframes bounceIn {
-            0% {
-                transform: scale(0.3);
-                opacity: 0;
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            70% {
-                transform: scale(0.9);
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            75% {
-                transform: translateX(5px);
-            }
-        }
-
-        .pulse-red {
-            animation: pulseRed 1s infinite;
-        }
-
-        @keyframes pulseRed {
-
-            0%,
-            100% {
-                background-color: rgb(239 68 68);
-            }
-
-            50% {
-                background-color: rgb(220 38 38);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="character.js"></script>
+    <script src="script.js"></script>
 </head>
 
 <body class="bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 min-h-screen p-4">
-    <div class="max-w-6xl mx-auto">
-        <!-- 標題 -->
+    <div class="max-w-6xl mx-auto" x-data="expenseTracker()">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-purple-800 mb-2">💰 每日的花費追蹤器 💰</h1>
-            <p class="text-purple-600">讓可愛的學生陪你管理每日花費！</p>
+            <p class="text-purple-600">陪你管理每日花費</p>
         </div>
 
-
-
-        <!-- 第一列：橫向排列 - 左側個人設定、中間角色、右側花費統計 -->
         <div class="bg-pink-50 rounded-3xl shadow-lg p-6 mb-8">
             <div class="grid grid-cols-3 gap-4 items-stretch min-h-[400px]">
-                <!-- 左側：個人設定、用戶資訊、預算狀態及花費小提示 -->
                 <div class="h-full flex flex-col space-y-3">
-                    <!-- 個人資訊與用戶顯示合併 -->
                     <div class="bg-yellow-50 rounded-xl p-4 flex flex-col">
                         <div class="text-sm font-medium text-yellow-800 mb-3 text-center">個人資訊</div>
-
-                        <!-- 輸入表單 -->
                         <div class="space-y-2 flex-shrink-0 mb-3">
-                            <input type="text" id="userNameInput" placeholder="請輸入姓名"
-                                class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
-                            <input type="number" id="dailyBudgetInput" placeholder="請設定每日預算"
-                                class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
-                            <button onclick="setUserInfo()"
-                                class="w-full bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg font-medium text-sm transition-all">
-                                設定
-                            </button>
+                            <input type="text" placeholder="請輸入姓名" x-model="userInput.name" @keydown.enter="setUserInfo" class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
+                            <input type="number" placeholder="請設定每日預算" x-model.number="userInput.budget" @keydown.enter="setUserInfo" class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
+                            <button @click="setUserInfo" class="w-full bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg font-medium text-sm transition-all">設定</button>
                         </div>
-
-                        <!-- 用戶資訊顯示 -->
-                        <div id="userDisplay"
-                            class="opacity-0 transition-opacity duration-500 flex-1 flex flex-col justify-center">
+                        <div x-show="userName && dailyBudget > 0" x-transition:enter="bounce-in" class="flex-1 flex flex-col justify-center">
                             <div class="bg-purple-100 rounded-xl p-3">
                                 <div class="text-center">
                                     <div class="text-purple-800 font-medium mb-2">
-                                        <div class="text-sm">👋 <span id="displayName">使用者</span></div>
+                                        <div class="text-sm">👋 <span x-text="userName"></span></div>
                                     </div>
                                     <div class="text-purple-700">
                                         <div class="text-xs mb-1">今日預算</div>
-                                        <div class="text-sm font-bold">💰 <span id="displayBudget">0</span> 元</div>
+                                        <div class="text-sm font-bold">💰 <span x-text="dailyBudget"></span> 元</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- 預算狀態 -->
                     <div class="bg-blue-50 rounded-xl p-3 flex-1">
                         <div class="text-sm font-medium text-blue-800 mb-2 text-center">預算狀態</div>
                         <div class="space-y-1 text-sm">
                             <div class="flex items-center justify-between">
                                 <span class="text-blue-600">預算上限</span>
-                                <span class="text-blue-600 font-medium"><span id="budgetLimit">0</span> 元</span>
+                                <span class="text-blue-600 font-medium"><span x-text="dailyBudget"></span> 元</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-red-600">已花費</span>
-                                <span class="text-red-600 font-medium"><span id="spentAmount">0</span> 元</span>
+                                <span class="text-red-600 font-medium"><span x-text="totalSpent"></span> 元</span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-600">剩餘預算</span>
-                                <span class="text-green-600 font-medium"><span id="remainingAmount">0</span> 元</span>
+                            <div class="flex items-center justify-between" :class="remainingAmount === 0 ? 'text-red-600' : 'text-green-600'">
+                                <span>剩餘預算</span>
+                                <span class="font-medium"><span x-text="remainingAmount"></span> 元</span>
                             </div>
                         </div>
                     </div>
-
-                    <!-- 花費提示 -->
                     <div class="bg-red-50 rounded-xl p-3 flex-shrink-0">
                         <div class="text-xs font-medium text-red-800 mb-2 text-center">花費提示</div>
-                        <div class="text-center">
-                            <div class="text-xs text-purple-600">
-                                24小時冷靜期提醒<br>
-                                避免衝動消費
-                            </div>
-                        </div>
+                        <div class="text-center"><div class="text-xs text-purple-600">24小時冷靜期提醒<br>避免衝動消費</div></div>
                     </div>
                 </div>
 
-                <!-- 中間：角色人物上方顯示姓名、每日預算金額及美好的一天就從早餐開始 -->
-                <div class="character-animation text-center">
-                    <!-- 角色上方資訊 -->
+                <div class="character-animation text-center" :class="{ 'shake': level >= 7 }">
                     <div class="mb-4 space-y-2">
                         <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-3">
                             <div class="text-purple-800 font-bold text-sm">
-                                <span id="characterName">請先設定個人資訊</span>
+                                <span x-text="userName || '請先設定個人資訊'"></span>
                             </div>
-                            <div class="text-purple-600 text-xs">
-                                每日預算：<span id="characterBudget" class="font-medium">0</span> 元
-                            </div>
+                            <div class="text-purple-600 text-xs">每日預算：<span x-text="dailyBudget" class="font-medium"></span> 元</div>
                         </div>
-                        <div class="bg-yellow-100 rounded-xl p-2">
-                            <div class="text-orange-600 text-xs font-medium">
-                                ☀️ 美好的一天就從早餐開始！
-                            </div>
-                        </div>
+                        <div class="bg-yellow-100 rounded-xl p-2"><div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div></div>
                     </div>
-
-                    <div class="relative inline-block">
-                        <!-- 楓之谷遊戲風格學生 -->
-                        <svg width="200" height="280" viewBox="0 0 200 280" id="characterSvg">
-                            <!-- 身體 (Q版比例) -->
-                            <rect x="82" y="160" width="36" height="50" rx="18" fill="#FDBCB4" id="body" />
-
-                            <!-- 學生制服上衣 (楓之谷風格) -->
-                            <rect x="84" y="160" width="32" height="45" rx="16" fill="#ffffff" id="uniform" />
-                            <!-- 制服邊框 -->
-                            <rect x="84" y="160" width="32" height="45" rx="16" fill="none" stroke="#000000"
-                                stroke-width="2" id="uniformBorder" />
-                            <!-- 襯衫領子 -->
-                            <polygon points="92,160 100,170 108,160 108,155 92,155" fill="#f0f0f0" stroke="#000000"
-                                stroke-width="1.5" id="collar" />
-                            <!-- 學校領帶 -->
-                            <rect x="97" y="170" width="6" height="18" fill="#dc2626" stroke="#000000" stroke-width="1"
-                                id="tie" />
-                            <polygon points="97,188 103,188 100,194" fill="#b91c1c" stroke="#000000" stroke-width="1"
-                                id="tieEnd" />
-                            <!-- 襯衫釦子 -->
-                            <circle cx="100" cy="175" r="2" fill="#e5e5e5" stroke="#000000" stroke-width="1"
-                                id="button1" />
-                            <circle cx="100" cy="185" r="2" fill="#e5e5e5" stroke="#000000" stroke-width="1"
-                                id="button2" />
-                            <circle cx="100" cy="195" r="2" fill="#e5e5e5" stroke="#000000" stroke-width="1"
-                                id="button3" />
-
-                            <!-- 左手臂 (Q版) -->
-                            <rect x="62" y="165" width="20" height="30" rx="10" fill="#FDBCB4" id="leftArm" />
-                            <rect x="62" y="165" width="20" height="30" rx="10" fill="none" stroke="#000000"
-                                stroke-width="2" id="leftArmBorder" />
-                            <rect x="64" y="165" width="16" height="25" rx="8" fill="#ffffff" id="leftSleeve" />
-                            <!-- 左手 -->
-                            <circle cx="72" cy="200" r="8" fill="#FDBCB4" stroke="#000000" stroke-width="2"
-                                id="leftHand" />
-
-                            <!-- 右手臂 (Q版) -->
-                            <rect x="118" y="165" width="20" height="30" rx="10" fill="#FDBCB4" id="rightArm" />
-                            <rect x="118" y="165" width="20" height="30" rx="10" fill="none" stroke="#000000"
-                                stroke-width="2" id="rightArmBorder" />
-                            <rect x="120" y="165" width="16" height="25" rx="8" fill="#ffffff" id="rightSleeve" />
-                            <!-- 右手 -->
-                            <circle cx="128" cy="200" r="8" fill="#FDBCB4" stroke="#000000" stroke-width="2"
-                                id="rightHand" />
-
-                            <!-- 學生裙子 (楓之谷風格) -->
-                            <rect x="78" y="210" width="44" height="25" rx="5" fill="#1f2937" id="pants" />
-                            <rect x="78" y="210" width="44" height="25" rx="5" fill="none" stroke="#000000"
-                                stroke-width="2" id="pantsBorder" />
-                            <!-- 裙子褶皺線 -->
-                            <line x1="88" y1="215" x2="88" y2="230" stroke="#374151" stroke-width="1.5" />
-                            <line x1="100" y1="215" x2="100" y2="230" stroke="#374151" stroke-width="1.5" />
-                            <line x1="112" y1="215" x2="112" y2="230" stroke="#374151" stroke-width="1.5" />
-
-                            <!-- 左腿 (Q版) -->
-                            <rect x="85" y="235" width="12" height="30" rx="6" fill="#FDBCB4" id="leftLeg" />
-                            <rect x="85" y="235" width="12" height="30" rx="6" fill="none" stroke="#000000"
-                                stroke-width="2" id="leftLegBorder" />
-                            <!-- 左襪子 -->
-                            <rect x="86" y="255" width="10" height="15" rx="5" fill="#ffffff" id="leftSock" />
-                            <rect x="86" y="255" width="10" height="15" rx="5" fill="none" stroke="#000000"
-                                stroke-width="1.5" id="leftSockBorder" />
-                            <!-- 左鞋 (楓之谷學生鞋) -->
-                            <ellipse cx="91" cy="275" rx="10" ry="5" fill="#2c3e50" stroke="#000000" stroke-width="2"
-                                id="leftShoe" />
-                            <ellipse cx="91" cy="273" rx="8" ry="3" fill="#374151" id="leftShoeTop" />
-
-                            <!-- 右腿 (Q版) -->
-                            <rect x="103" y="235" width="12" height="30" rx="6" fill="#FDBCB4" id="rightLeg" />
-                            <rect x="103" y="235" width="12" height="30" rx="6" fill="none" stroke="#000000"
-                                stroke-width="2" id="rightLegBorder" />
-                            <!-- 右襪子 -->
-                            <rect x="104" y="255" width="10" height="15" rx="5" fill="#ffffff" id="rightSock" />
-                            <rect x="104" y="255" width="10" height="15" rx="5" fill="none" stroke="#000000"
-                                stroke-width="1.5" id="rightSockBorder" />
-                            <!-- 右鞋 (楓之谷學生鞋) -->
-                            <ellipse cx="109" cy="275" rx="10" ry="5" fill="#2c3e50" stroke="#000000" stroke-width="2"
-                                id="rightShoe" />
-                            <ellipse cx="109" cy="273" rx="8" ry="3" fill="#374151" id="rightShoeTop" />
-
-                            <!-- 頭部 (楓之谷特色大頭) -->
-                            <circle cx="100" cy="120" r="35" fill="#FDBCB4" stroke="#000000" stroke-width="3"
-                                id="head" />
-
-                            <!-- 楓之谷風格髮型 (動漫風) -->
-                            <path
-                                d="M 68 95 Q 80 75 100 80 Q 120 75 132 95 Q 128 85 115 88 Q 100 70 85 88 Q 72 85 68 95"
-                                fill="#8B4513" stroke="#000000" stroke-width="2" id="hair" />
-                            <!-- 動感瀏海 -->
-                            <path d="M 72 110 Q 85 95 100 105 Q 115 95 128 110" fill="#8B4513" stroke="#000000"
-                                stroke-width="2" id="bangs" />
-                            <!-- 側邊頭髮束 -->
-                            <ellipse cx="70" cy="120" rx="8" ry="20" fill="#8B4513" stroke="#000000" stroke-width="2"
-                                id="hairLeft" />
-                            <ellipse cx="130" cy="120" rx="8" ry="20" fill="#8B4513" stroke="#000000" stroke-width="2"
-                                id="hairRight" />
-                            <!-- 頭髮高光 (楓之谷風格) -->
-                            <ellipse cx="92" cy="88" rx="4" ry="10" fill="#D2691E" id="hairHighlight" />
-                            <ellipse cx="108" cy="88" rx="4" ry="10" fill="#D2691E" id="hairHighlight2" />
-
-                            <!-- 楓之谷特色大眼睛 -->
-                            <ellipse cx="88" cy="115" rx="10" ry="12" fill="white" stroke="#000000" stroke-width="2"
-                                id="leftEye" />
-                            <ellipse cx="112" cy="115" rx="10" ry="12" fill="white" stroke="#000000" stroke-width="2"
-                                id="rightEye" />
-                            <!-- 瞳孔 (動漫風) -->
-                            <circle cx="88" cy="117" r="5" fill="#4169E1" id="leftPupil" />
-                            <circle cx="112" cy="117" r="5" fill="#4169E1" id="rightPupil" />
-                            <!-- 眼睛高光 (楓之谷特色) -->
-                            <circle cx="90" cy="114" r="2" fill="white" id="leftHighlight" />
-                            <circle cx="114" cy="114" r="2" fill="white" id="rightHighlight" />
-                            <ellipse cx="86" cy="119" rx="1" ry="2" fill="white" id="leftHighlight2" />
-                            <ellipse cx="110" cy="119" rx="1" ry="2" fill="white" id="rightHighlight2" />
-
-                            <!-- 粗眉毛 (楓之谷風格) -->
-                            <rect x="78" y="105" width="15" height="4" rx="2" fill="#654321" id="leftEyebrow" />
-                            <rect x="107" y="105" width="15" height="4" rx="2" fill="#654321" id="rightEyebrow" />
-
-                            <!-- 小鼻子 (簡化) -->
-                            <circle cx="100" cy="128" r="2" fill="#E6B8A2" stroke="#000000" stroke-width="1"
-                                id="nose" />
-
-                            <!-- 嘴巴 (楓之谷風格) -->
-                            <path d="M 92 138 Q 100 143 108 138" stroke="#000000" stroke-width="2.5" fill="none"
-                                id="mouth" />
-
-                            <!-- 臉頰紅暈 (楓之谷特色) -->
-                            <circle cx="68" cy="128" r="5" fill="#ff69b4" opacity="0.6" id="leftCheek" />
-                            <circle cx="132" cy="128" r="5" fill="#ff69b4" opacity="0.6" id="rightCheek" />
-
-                            <!-- 道具區域 -->
-                            <g id="actionItem">
-                                <!-- 書包 (楓之谷風格) -->
-                                <rect x="50" y="165" width="15" height="18" rx="3" fill="#4f46e5" stroke="#000000"
-                                    stroke-width="2" />
-                                <rect x="52" y="167" width="11" height="14" rx="2" fill="#6366f1" />
-                                <circle cx="57" cy="170" r="2" fill="#fbbf24" stroke="#000000" stroke-width="1" />
-                                <!-- 書包帶 -->
-                                <path d="M 57 158 Q 65 162 68 168" stroke="#374151" stroke-width="3" fill="none" />
-                            </g>
-
-                            <!-- 汗珠 (隱藏) -->
-                            <g id="sweatDrops" style="opacity: 0;">
-                                <ellipse cx="72" cy="85" rx="4" ry="6" fill="#87ceeb" stroke="#000000"
-                                    stroke-width="1" />
-                                <ellipse cx="128" cy="85" rx="4" ry="6" fill="#87ceeb" stroke="#000000"
-                                    stroke-width="1" />
-                                <circle cx="72" cy="91" r="2" fill="#b0e0e6" />
-                                <circle cx="128" cy="91" r="2" fill="#b0e0e6" />
-                            </g>
-
-                            <!-- 錢包 (隱藏) -->
-                            <g id="wallet" style="opacity: 0;">
-                                <rect x="130" y="168" width="12" height="8" rx="2" fill="#8B4513" stroke="#000000"
-                                    stroke-width="1.5" />
-                                <rect x="131" y="169" width="10" height="6" rx="1" fill="#fbbf24" />
-                                <circle cx="136" cy="172" r="1" fill="#cd7f32" />
-                            </g>
-                        </svg>
+                    <div class="relative inline-block flex items-center justify-center">
+                        <img :src="currentCharacterImage" alt="Character Expression" class="max-w-full max-h-full object-contain">
                     </div>
                 </div>
 
-                <!-- 右側：花費統計，分列有餐飲、交通、娛樂、日用品及總計 -->
                 <div class="h-full flex flex-col space-y-3">
-                    <!-- 花費統計標題 -->
                     <div class="bg-green-50 rounded-xl p-3">
                         <h3 class="text-sm font-bold text-green-800 text-center mb-3">花費統計</h3>
-
-                        <!-- 各類別花費 -->
                         <div class="space-y-2 h-full flex flex-col justify-center">
-                            <div class="flex items-center justify-between bg-white rounded-lg p-2">
-                                <span class="text-lg">🍽️</span>
-                                <span class="font-bold text-orange-600" id="foodTotal">0元</span>
-                            </div>
-
-                            <div class="flex items-center justify-between bg-white rounded-lg p-2">
-                                <span class="text-lg">🚌</span>
-                                <span class="font-bold text-blue-600" id="transportTotal">0元</span>
-                            </div>
-
-                            <div class="flex items-center justify-between bg-white rounded-lg p-2">
-                                <span class="text-lg">🎮</span>
-                                <span class="font-bold text-purple-600" id="entertainmentTotal">0元</span>
-                            </div>
-
-                            <div class="flex items-center justify-between bg-white rounded-lg p-2">
-                                <span class="text-lg">🧴</span>
-                                <span class="font-bold text-green-600" id="dailyTotal">0元</span>
-                            </div>
+                            <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🍽️</span><span class="font-bold text-orange-600" x-text="`${categoryTotals.food}元`"></span></div>
+                            <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🚌</span><span class="font-bold text-blue-600" x-text="`${categoryTotals.transport}元`"></span></div>
+                            <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🎮</span><span class="font-bold text-purple-600" x-text="`${categoryTotals.entertainment}元`"></span></div>
+                            <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🧴</span><span class="font-bold text-green-600" x-text="`${categoryTotals.daily}元`"></span></div>
                         </div>
                     </div>
-
-                    <!-- 總計 -->
                     <div class="bg-red-100 rounded-xl p-3 flex-shrink-0">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-bold text-red-800">總計</span>
-                            <span class="text-sm font-bold text-red-600" id="totalAmountRight">0元</span>
-                        </div>
-                        <div class="mt-2 text-xs text-red-600 text-center">
-                            佔預算比例：<span id="budgetPercentage" class="font-medium">0%</span>
-                        </div>
+                        <div class="flex items-center justify-between"><span class="text-sm font-bold text-red-800">總計</span><span class="text-sm font-bold text-red-600" x-text="`${totalSpent}元`"></span></div>
+                        <div class="mt-2 text-xs text-red-600 text-center">佔預算比例：<span class="font-medium" x-text="`${percentage}%`"></span></div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                            <div id="progressBar" class="bg-green-500 h-2.5 rounded-full progress-bar"
-                                style="width: 0%"></div>
+                            <div class="h-2.5 rounded-full progress-bar" :style="`width: ${Math.min(percentage, 100)}%`" :class="{ 'bg-green-500': percentage < 50, 'bg-yellow-500': percentage >= 50 && percentage < 90, 'bg-red-500': percentage >= 90, 'pulse-red': percentage >= 100 }"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 第二列：語錄 -->
         <div class="bg-white rounded-3xl shadow-lg p-6 mb-8">
             <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-2xl p-6 text-center">
-                <p class="text-sm font-medium text-purple-800" id="quote">
-                    打工賺錢不容易，每一分錢都要精打細算。
-                </p>
+                <p class="text-sm font-medium text-purple-800" x-text="currentQuote"></p>
             </div>
         </div>
 
-        <!-- 花費輸入區 -->
         <div class="bg-white rounded-3xl shadow-lg p-6 mt-8">
             <h3 class="text-sm font-bold text-purple-800 mb-4 text-center">💳 記錄花費</h3>
             <div class="grid md:grid-cols-4 gap-4 mb-4">
-                <select id="category"
-                    class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
+                <select x-model="newExpense.category" class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
                     <option value="">選擇類別</option>
                     <option value="food">🍽️ 餐飲</option>
                     <option value="transport">🚌 交通</option>
                     <option value="entertainment">🎮 娛樂</option>
                     <option value="daily">🧴 日用品</option>
                 </select>
-                <input type="text" id="description" placeholder="花費細節 (如：早餐、捷運票)"
-                    class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
-                <input type="number" id="amount" placeholder="金額"
-                    class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
-                <button onclick="addExpense()"
-                    class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-2xl font-medium transition-all">
-                    新增 ✨
-                </button>
+                <input type="text" placeholder="花費細節 (如：早餐、捷運票)" x-model="newExpense.description" class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
+                <input type="number" placeholder="金額" x-model.number="newExpense.amount" @keydown.enter="addExpense" class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
+                <button @click="addExpense" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-2xl font-medium transition-all">新增 ✨</button>
             </div>
         </div>
 
-        <!-- 花費記錄 -->
         <div class="bg-white rounded-3xl shadow-lg p-6 mt-8">
             <h3 class="text-sm font-bold text-purple-800 mb-4">📝 今日花費記錄</h3>
-            <div id="expenseList" class="space-y-2">
-                <p class="text-gray-500 text-center py-8">還沒有任何花費記錄喔～</p>
+            <div class="space-y-2">
+                <template x-if="expenses.length === 0">
+                    <p class="text-gray-500 text-center py-8">還沒有任何花費記錄喔～</p>
+                </template>
+                <template x-for="expense in expenses" :key="expense.id">
+                    <div class="flex justify-between items-center bg-gray-50 rounded-xl p-4 bounce-in">
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg" x-text="expense.icon"></span>
+                            <div>
+                                <div class="font-medium text-purple-800 text-sm" x-text="expense.description"></div>
+                                <div class="text-xs text-purple-600" x-text="expense.categoryName"></div>
+                            </div>
+                        </div>
+                        <div class="text-sm font-bold text-red-500" x-text="`-${expense.amount}元`"></div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
-
-    <script>
-        let totalSpent = 0;
-        let dailyBudgetAmount = 0;
-        let expenses = [];
-        let categoryTotals = {
-            food: 0,
-            transport: 0,
-            entertainment: 0,
-            daily: 0
-        };
-
-        const quotes = [
-            "打工賺錢不容易，每一分錢都要精打細算。",
-            "偶爾花點錢犒賞自己，這是應該的。",
-            "嗯...花費有點超出預期，需要控制一下。",
-            "這個消費速度有點快，得重新檢視預算。",
-            "情況開始不妙，這個月可能會很緊。",
-            "必須冷靜下來，不能再這樣亂花錢了。",
-            "糟糕，照這樣下去會入不敷出。",
-            "完了，生活費都快不夠了。",
-            "這下真的麻煩了，錢包快見底了。",
-            "徹底破產，連基本生活都成問題了。"
-        ];
-
-        const characterStates = [
-            // 第1格：開心表情 (楓之谷風格)
-            {
-                mouth: "M 92 138 Q 100 143 108 138",
-                leftPupil: { cx: 88, cy: 117 },
-                rightPupil: { cx: 112, cy: 117 },
-                leftCheek: { opacity: 0.6 },
-                rightCheek: { opacity: 0.6 },
-                sweatDrops: { opacity: 0 },
-                wallet: { opacity: 0 },
-                actionItem: `
-<rect x="50" y="165" width="15" height="18" rx="3" fill="#4f46e5" stroke="#000000" stroke-width="2"/>
-<rect x="52" y="167" width="11" height="14" rx="2" fill="#6366f1"/>
-<circle cx="57" cy="170" r="2" fill="#fbbf24" stroke="#000000" stroke-width="1"/>
-<path d="M 57 158 Q 65 162 68 168" stroke="#374151" stroke-width="3" fill="none"/>
-`
-            },
-            // 第2格：滿意 (楓之谷風格)
-            {
-                mouth: "M 90 137 Q 100 142 110 137",
-                leftPupil: { cx: 88, cy: 117 },
-                rightPupil: { cx: 112, cy: 117 },
-                leftCheek: { opacity: 0.6 },
-                rightCheek: { opacity: 0.6 },
-                sweatDrops: { opacity: 0 },
-                wallet: { opacity: 0 },
-                actionItem: `
-<rect x="50" y="165" width="15" height="18" rx="3" fill="#4f46e5" stroke="#000000" stroke-width="2"/>
-<rect x="52" y="167" width="11" height="14" rx="2" fill="#6366f1"/>
-<circle cx="57" cy="170" r="2" fill="#fbbf24" stroke="#000000" stroke-width="1"/>
-<path d="M 57 158 Q 65 162 68 168" stroke="#374151" stroke-width="3" fill="none"/>
-`
-            },
-            // 第3格：稍微擔心
-            {
-                mouth: "M 94 139 Q 100 140 106 139",
-                leftPupil: { cx: 86, cy: 118 },
-                rightPupil: { cx: 114, cy: 118 },
-                leftCheek: { opacity: 0.4 },
-                rightCheek: { opacity: 0.4 },
-                sweatDrops: { opacity: 0 },
-                wallet: { opacity: 0 },
-                actionItem: ``
-            },
-            // 第4格：開始擔心
-            {
-                mouth: "M 96 140 L 104 140",
-                leftPupil: { cx: 86, cy: 119 },
-                rightPupil: { cx: 114, cy: 119 },
-                leftCheek: { opacity: 0.3 },
-                rightCheek: { opacity: 0.3 },
-                sweatDrops: { opacity: 0.5 },
-                wallet: { opacity: 0 },
-                actionItem: ``
-            },
-            // 第5格：檢查錢包
-            {
-                mouth: "M 97 141 L 103 141",
-                leftPupil: { cx: 86, cy: 119 },
-                rightPupil: { cx: 114, cy: 119 },
-                leftCheek: { opacity: 0.2 },
-                rightCheek: { opacity: 0.2 },
-                sweatDrops: { opacity: 0.7 },
-                wallet: { opacity: 1 },
-                actionItem: ``
-            },
-            // 第6格：緊張
-            {
-                mouth: "M 98 142 L 102 142",
-                leftPupil: { cx: 85, cy: 119 },
-                rightPupil: { cx: 115, cy: 119 },
-                leftCheek: { opacity: 0.1 },
-                rightCheek: { opacity: 0.1 },
-                sweatDrops: { opacity: 1 },
-                wallet: { opacity: 1 },
-                actionItem: ``
-            },
-            // 第7格：嚴重警告 (楓之谷風格)
-            {
-                mouth: "M 90 145 Q 100 151 110 145",
-                leftPupil: { cx: 85, cy: 119 },
-                rightPupil: { cx: 115, cy: 119 },
-                leftCheek: { opacity: 0 },
-                rightCheek: { opacity: 0 },
-                sweatDrops: { opacity: 1 },
-                wallet: { opacity: 1 },
-                actionItem: `
-<circle cx="100" cy="240" r="12" fill="#FF0000" stroke="#000000" stroke-width="2" opacity="0.8">
-<animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/>
-</circle>
-<text x="100" y="246" text-anchor="middle" font-size="12" fill="white" font-weight="bold" stroke="#000000" stroke-width="0.5">!</text>
-`
-            },
-            // 第8格：痛苦表情 (楓之谷風格)
-            {
-                mouth: "M 88 148 Q 100 155 112 148",
-                leftPupil: { cx: 85, cy: 120 },
-                rightPupil: { cx: 115, cy: 120 },
-                leftCheek: { opacity: 0 },
-                rightCheek: { opacity: 0 },
-                sweatDrops: { opacity: 1 },
-                wallet: { opacity: 1 },
-                actionItem: ``
-            },
-            // 第9格：絕望 (楓之谷風格)
-            {
-                mouth: "M 85 151 Q 100 161 115 151",
-                leftPupil: { cx: 84, cy: 120 },
-                rightPupil: { cx: 116, cy: 120 },
-                leftCheek: { opacity: 0 },
-                rightCheek: { opacity: 0 },
-                sweatDrops: { opacity: 1 },
-                wallet: { opacity: 1 },
-                actionItem: `
-<g>
-<path d="M 45 80 L 52 75 L 59 80 L 52 85 Z" fill="#FFD700" stroke="#000000" stroke-width="1">
-<animateTransform attributeName="transform" type="rotate" values="0 52 80;360 52 80" dur="2s" repeatCount="indefinite"/>
-</path>
-<path d="M 141 80 L 148 75 L 155 80 L 148 85 Z" fill="#FFD700" stroke="#000000" stroke-width="1">
-<animateTransform attributeName="transform" type="rotate" values="0 148 80;-360 148 80" dur="2s" repeatCount="indefinite"/>
-</path>
-</g>
-`
-            },
-            // 第10格：完全破產 (楓之谷風格)
-            {
-                mouth: "M 82 155 Q 100 168 118 155",
-                leftPupil: { cx: 84, cy: 121 },
-                rightPupil: { cx: 116, cy: 121 },
-                leftCheek: { opacity: 0 },
-                rightCheek: { opacity: 0 },
-                sweatDrops: { opacity: 1 },
-                wallet: { opacity: 1 },
-                actionItem: `
-<g>
-<rect x="130" y="168" width="12" height="8" rx="2" fill="#8B4513" stroke="#000000" stroke-width="1.5"/>
-<rect x="131" y="169" width="10" height="6" rx="1" fill="#fbbf24"/>
-<circle cx="136" cy="172" r="1" fill="#cd7f32"/>
-<ellipse cx="136" cy="155" rx="4" ry="3" fill="#666" opacity="0.7">
-<animate attributeName="cy" values="155;145;155" dur="2s" repeatCount="indefinite"/>
-</ellipse>
-<text x="136" y="188" text-anchor="middle" font-size="10" fill="#FF0000" font-weight="bold" stroke="#000000" stroke-width="0.5">破產</text>
-</g>
-`
-            }
-        ];
-
-        function setUserInfo() {
-            const name = document.getElementById('userNameInput').value;
-            const budget = parseInt(document.getElementById('dailyBudgetInput').value) || 0;
-
-            if (name && budget > 0) {
-                // 1. 更新顯示資訊
-                document.getElementById('displayName').textContent = name;
-                document.getElementById('displayBudget').textContent = budget;
-                document.getElementById('characterName').textContent = name;
-                document.getElementById('characterBudget').textContent = budget;
-
-                // 2. 設定預算金額到全域變數
-                dailyBudgetAmount = budget;
-
-                // 3. 更新預算狀態面板
-                updateBudgetStatus();
-
-                // 4. 顯示使用者資訊卡片並添加動畫
-                const userDisplay = document.getElementById('userDisplay');
-                userDisplay.classList.remove('bounce-in'); // 先移除動畫，確保每次點擊都觸發
-                void userDisplay.offsetWidth; // 觸發重繪
-                userDisplay.style.opacity = '1';
-                userDisplay.classList.add('bounce-in');
-
-                // 5. 清空輸入框
-                document.getElementById('userNameInput').value = '';
-                document.getElementById('dailyBudgetInput').value = '';
-            } else {
-                alert('請確保已輸入姓名，且預算金額大於 0 ！');
-            }
-        }
-
-        function addExpense() {
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            const amount = parseInt(document.getElementById('amount').value) || 0;
-
-            if (!category || !description || amount <= 0) {
-                alert('請填寫完整的花費資訊！');
-                return;
-            }
-
-            // 添加到記錄
-            expenses.push({ category, description, amount, time: new Date() });
-            totalSpent += amount;
-            categoryTotals[category] += amount;
-
-            // 更新顯示
-            updateDisplay();
-            updateBudgetStatus();
-            updateCategoryTotals();
-            addExpenseToList(category, description, amount);
-
-            // 清空輸入框
-            document.getElementById('category').value = '';
-            document.getElementById('description').value = '';
-            document.getElementById('amount').value = '';
-        }
-
-        function updateDisplay() {
-            const percentage = dailyBudgetAmount > 0 ? (totalSpent / dailyBudgetAmount) * 100 : 0;
-            const level = Math.min(Math.floor(percentage / 10), 9);
-
-            // 更新總金額
-            document.getElementById('totalAmountRight').textContent = totalSpent + '元';
-            updateBudgetPercentage();
-
-            // 更新進度條
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.width = Math.min(percentage, 100) + '%';
-
-            // 根據花費比例更新進度條顏色
-            progressBar.classList.remove('pulse-red', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'); // 先移除所有顏色
-            if (percentage < 50) {
-                progressBar.classList.add('bg-green-500');
-            } else if (percentage < 90) {
-                progressBar.classList.add('bg-yellow-500');
-            } else {
-                progressBar.classList.add('bg-red-500');
-            }
-
-            // 更新角色和語錄
-            document.getElementById('quote').textContent = quotes[level];
-            updateCharacterAppearance(level);
-
-            // 添加特效
-            if (level >= 7) {
-                document.querySelector('.character-animation').classList.add('shake');
-                setTimeout(() => {
-                    document.querySelector('.character-animation').classList.remove('shake');
-                }, 500);
-            }
-
-            // 超過預算時，添加紅色閃爍動畫
-            if (percentage >= 100) {
-                progressBar.classList.add('pulse-red');
-            }
-        }
-
-        function updateBudgetPercentage() {
-            const percentage = dailyBudgetAmount > 0 ? (totalSpent / dailyBudgetAmount) * 100 : 0;
-            document.getElementById('budgetPercentage').textContent = Math.round(percentage) + '%';
-        }
-
-        function updateBudgetStatus() {
-            const remaining = Math.max(0, dailyBudgetAmount - totalSpent);
-            const remainingEl = document.getElementById('remainingAmount');
-
-            document.getElementById('budgetLimit').textContent = dailyBudgetAmount;
-            document.getElementById('spentAmount').textContent = totalSpent;
-            remainingEl.textContent = remaining;
-
-            // Change color to red if budget is used up, otherwise keep it green
-            if (remaining === 0 && dailyBudgetAmount > 0) {
-                remainingEl.parentElement.classList.remove('text-green-600');
-                remainingEl.parentElement.classList.add('text-red-600');
-            } else {
-                remainingEl.parentElement.classList.remove('text-red-600');
-                remainingEl.parentElement.classList.add('text-green-600');
-            }
-        }
-
-        function updateCharacterAppearance(level) {
-            const state = characterStates[level];
-
-            // 更新嘴巴
-            document.getElementById('mouth').setAttribute('d', state.mouth);
-
-            // 更新瞳孔位置
-            document.getElementById('leftPupil').setAttribute('cx', state.leftPupil.cx);
-            document.getElementById('leftPupil').setAttribute('cy', state.leftPupil.cy);
-            document.getElementById('rightPupil').setAttribute('cx', state.rightPupil.cx);
-            document.getElementById('rightPupil').setAttribute('cy', state.rightPupil.cy);
-
-            // 更新臉頰紅暈
-            document.getElementById('leftCheek').style.opacity = state.leftCheek.opacity;
-            document.getElementById('rightCheek').style.opacity = state.rightCheek.opacity;
-
-            // 更新汗珠
-            document.getElementById('sweatDrops').style.opacity = state.sweatDrops.opacity;
-
-            // 更新錢包
-            document.getElementById('wallet').style.opacity = state.wallet.opacity;
-
-            // 更新道具
-            document.getElementById('actionItem').innerHTML = state.actionItem;
-        }
-
-        function updateCategoryTotals() {
-            document.getElementById('foodTotal').textContent = categoryTotals.food + '元';
-            document.getElementById('transportTotal').textContent = categoryTotals.transport + '元';
-            document.getElementById('entertainmentTotal').textContent = categoryTotals.entertainment + '元';
-            document.getElementById('dailyTotal').textContent = categoryTotals.daily + '元';
-        }
-
-        function addExpenseToList(category, description, amount) {
-            const expenseList = document.getElementById('expenseList');
-
-            // 如果是第一筆記錄，清空提示文字
-            if (expenses.length === 1) {
-                expenseList.innerHTML = '';
-            }
-
-            const categoryIcons = {
-                food: '🍽️',
-                transport: '🚌',
-                entertainment: '🎮',
-                daily: '🧴'
-            };
-
-            const categoryNames = {
-                food: '餐飲',
-                transport: '交通',
-                entertainment: '娛樂',
-                daily: '日用品'
-            };
-
-            const expenseItem = document.createElement('div');
-            expenseItem.className = 'flex justify-between items-center bg-gray-50 rounded-xl p-4 bounce-in';
-            expenseItem.innerHTML = `
-<div class="flex items-center gap-3">
-<span class="text-lg">${categoryIcons[category]}</span>
-<div>
-<div class="font-medium text-purple-800 text-sm">${description}</div>
-<div class="text-xs text-purple-600">${categoryNames[category]}</div>
-</div>
-</div>
-<div class="text-sm font-bold text-red-500">-${amount}元</div>
-`;
-
-            expenseList.insertBefore(expenseItem, expenseList.firstChild);
-        }
-
-        // 按 Enter 鍵也能新增花費
-        document.getElementById('amount').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                addExpense();
-            }
-        });
-    </script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9815a12bd402828b',t:'MTc1ODI0ODY5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
-
 </html>
