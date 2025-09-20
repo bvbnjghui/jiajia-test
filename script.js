@@ -18,6 +18,7 @@ function expenseTracker() {
         notification: { show: false, message: '', type: 'info' },
         showInstallButton: false,
         deferredPrompt: null,
+        mobileCharacterExpanded: false,
 
         // 初始化 - 從本地儲存載入資料
         init() {

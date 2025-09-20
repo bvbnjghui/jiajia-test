@@ -113,3 +113,65 @@ body {
 input, select {
     font-size: 16px; /* 防止 iOS 縮放 */
 }
+
+/* 手機版固定底部角色狀態樣式 */
+.mobile-character-fixed {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 手機版底部安全區域 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .mobile-character-fixed {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* 改善手機版滾動體驗 */
+.mobile-character-expanded {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* 手機版角色動畫優化 */
+@media (max-width: 768px) {
+    .character-animation {
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+    
+    .shake {
+        animation: shakeMobile 0.5s ease-in-out;
+    }
+    
+    .panic {
+        animation: panicMobile 1s ease-in-out infinite;
+    }
+}
+
+@keyframes shakeMobile {
+    0%, 100% {
+        transform: translateX(0) translateZ(0);
+    }
+    25% {
+        transform: translateX(-3px) translateZ(0);
+    }
+    75% {
+        transform: translateX(3px) translateZ(0);
+    }
+}
+
+@keyframes panicMobile {
+    0%, 100% {
+        transform: scale(1) rotate(0deg) translateZ(0);
+    }
+    25% {
+        transform: scale(1.03) rotate(-1deg) translateZ(0);
+    }
+    50% {
+        transform: scale(1.05) rotate(0deg) translateZ(0);
+    }
+    75% {
+        transform: scale(1.03) rotate(1deg) translateZ(0);
+    }
+}
