@@ -63,3 +63,34 @@ body {
         background-color: rgb(220 38 38);
     }
 }
+
+/* 手機版優化 */
+@media (max-width: 768px) {
+    .mobile-optimized {
+        padding: 0.5rem;
+    }
+    
+    .mobile-text {
+        font-size: 0.875rem;
+    }
+    
+    .mobile-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* 改善觸控體驗 */
+button, input, select {
+    touch-action: manipulation;
+}
+
+/* 改善滾動體驗 */
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 改善輸入框在手機上的體驗 */
+input, select {
+    font-size: 16px; /* 防止 iOS 縮放 */
+}

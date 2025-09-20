@@ -1,0 +1,38 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景圓角矩形 -->
+  <rect width="512" height="512" rx="80" ry="80" fill="url(#gradient)"/>
+  
+  <!-- 錢袋圖示 -->
+  <g transform="translate(256, 256)">
+    <!-- 錢袋主體 -->
+    <ellipse cx="0" cy="20" rx="80" ry="100" fill="white" opacity="0.9"/>
+    
+    <!-- 錢袋開口 -->
+    <rect x="-60" y="-40" width="120" height="20" rx="10" ry="10" fill="white" opacity="0.9"/>
+    
+    <!-- 錢袋繩子 -->
+    <path d="M -40 -30 Q -40 -60 -20 -60 Q 0 -70 20 -60 Q 40 -60 40 -30" 
+          stroke="white" stroke-width="8" fill="none" opacity="0.9"/>
+    
+    <!-- 錢幣符號 -->
+    <text x="0" y="30" font-family="Arial, sans-serif" font-size="60" 
+          text-anchor="middle" fill="url(#gradient)" font-weight="bold">¥</text>
+    
+    <!-- 裝飾性星星 -->
+    <g opacity="0.7">
+      <polygon points="0,-120 8,-108 20,-108 12,-96 16,-84 0,-90 -16,-84 -12,-96 -20,-108 -8,-108" 
+               fill="white"/>
+      <polygon points="-100,-80 -92,-68 -80,-68 -88,-56 -84,-44 -100,-50 -116,-44 -112,-56 -120,-68 -108,-68" 
+               fill="white"/>
+      <polygon points="100,-80 108,-68 120,-68 112,-56 116,-44 100,-50 84,-44 88,-56 80,-68 92,-68" 
+               fill="white"/>
+    </g>
+  </g>
+</svg>
