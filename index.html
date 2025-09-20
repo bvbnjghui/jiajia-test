@@ -7,6 +7,7 @@
     <title>每日的花費追蹤器 (Alpine.js)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="character.js"></script>
     <script src="script.js"></script>
@@ -15,12 +16,116 @@
 <body class="bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 min-h-screen p-4">
     <div class="max-w-6xl mx-auto" x-data="expenseTracker()">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-purple-800 mb-2">💰 每日的花費追蹤器 💰</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-purple-800 mb-2">💰 每日的花費追蹤器 💰</h1>
             <p class="text-purple-600">陪你管理每日花費</p>
         </div>
 
-        <div class="bg-pink-50 rounded-3xl shadow-lg p-6 mb-8">
-            <div class="grid grid-cols-3 gap-4 items-stretch min-h-[400px]">
+        <div class="bg-pink-50 rounded-3xl shadow-lg p-4 md:p-6 mb-8">
+            <div class="space-y-2 md:hidden">
+                <div>
+                    <button @click="activeTab = activeTab === 'info' ? null : 'info'" class="w-full bg-purple-100 text-purple-800 font-bold p-3 rounded-lg flex justify-between items-center">
+                        <span>📊 個人與預算資訊</span>
+                        <span x-show="activeTab !== 'info'">▼</span>
+                        <span x-show="activeTab === 'info'">▲</span>
+                    </button>
+                    <div x-show="activeTab === 'info'" x-collapse class="p-2">
+                        <div class="h-full flex flex-col space-y-3">
+                            <div class="bg-yellow-50 rounded-xl p-4 flex flex-col">
+                                <div class="text-sm font-medium text-yellow-800 mb-3 text-center">個人資訊</div>
+                                <div class="space-y-2 flex-shrink-0 mb-3">
+                                    <input type="text" placeholder="請輸入姓名" x-model="userInput.name" @keydown.enter="setUserInfo" class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
+                                    <input type="number" placeholder="請設定每日預算" x-model.number="userInput.budget" @keydown.enter="setUserInfo" class="w-full px-3 py-2 border border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none text-sm">
+                                    <button @click="setUserInfo" class="w-full bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg font-medium text-sm transition-all">設定</button>
+                                </div>
+                                <div x-show="userName && dailyBudget > 0" x-transition:enter="bounce-in" class="flex-1 flex flex-col justify-center">
+                                    <div class="bg-purple-100 rounded-xl p-3">
+                                        <div class="text-center">
+                                            <div class="text-purple-800 font-medium mb-2">
+                                                <div class="text-sm">👋 <span x-text="userName"></span></div>
+                                            </div>
+                                            <div class="text-purple-700">
+                                                <div class="text-xs mb-1">今日預算</div>
+                                                <div class="text-sm font-bold">💰 <span x-text="dailyBudget"></span> 元</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 rounded-xl p-3 flex-1">
+                                <div class="text-sm font-medium text-blue-800 mb-2 text-center">預算狀態</div>
+                                <div class="space-y-1 text-sm">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-blue-600">預算上限</span>
+                                        <span class="text-blue-600 font-medium"><span x-text="dailyBudget"></span> 元</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-red-600">已花費</span>
+                                        <span class="text-red-600 font-medium"><span x-text="totalSpent"></span> 元</span>
+                                    </div>
+                                    <div class="flex items-center justify-between" :class="remainingAmount === 0 ? 'text-red-600' : 'text-green-600'">
+                                        <span>剩餘預算</span>
+                                        <span class="font-medium"><span x-text="remainingAmount"></span> 元</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <button @click="activeTab = activeTab === 'character' ? null : 'character'" class="w-full bg-purple-100 text-purple-800 font-bold p-3 rounded-lg flex justify-between items-center">
+                        <span>🐰 角色狀態</span>
+                        <span x-show="activeTab !== 'character'">▼</span>
+                        <span x-show="activeTab === 'character'">▲</span>
+                    </button>
+                    <div x-show="activeTab === 'character'" x-collapse class="p-2">
+                         <div class="character-animation text-center" :class="{ 'shake': level >= 7 }">
+                            <div class="mb-4 space-y-2">
+                                <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-3">
+                                    <div class="text-purple-800 font-bold text-sm">
+                                        <span x-text="userName || '請先設定個人資訊'"></span>
+                                    </div>
+                                    <div class="text-purple-600 text-xs">每日預算：<span x-text="dailyBudget" class="font-medium"></span> 元</div>
+                                </div>
+                                <div class="bg-yellow-100 rounded-xl p-2"><div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div></div>
+                            </div>
+                            <div class="relative inline-block flex items-center justify-center">
+                                <img :src="currentCharacterImage" alt="Character Expression" class="max-w-full max-h-full object-contain">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <button @click="activeTab = activeTab === 'stats' ? null : 'stats'" class="w-full bg-purple-100 text-purple-800 font-bold p-3 rounded-lg flex justify-between items-center">
+                        <span>📈 花費統計</span>
+                        <span x-show="activeTab !== 'stats'">▼</span>
+                        <span x-show="activeTab === 'stats'">▲</span>
+                    </button>
+                    <div x-show="activeTab === 'stats'" x-collapse class="p-2">
+                        <div class="h-full flex flex-col space-y-3">
+                            <div class="bg-green-50 rounded-xl p-3">
+                                <h3 class="text-sm font-bold text-green-800 text-center mb-3">花費統計</h3>
+                                <div class="space-y-2 h-full flex flex-col justify-center">
+                                    <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🍽️</span><span class="font-bold text-orange-600" x-text="`${categoryTotals.food}元`"></span></div>
+                                    <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🚌</span><span class="font-bold text-blue-600" x-text="`${categoryTotals.transport}元`"></span></div>
+                                    <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🎮</span><span class="font-bold text-purple-600" x-text="`${categoryTotals.entertainment}元`"></span></div>
+                                    <div class="flex items-center justify-between bg-white rounded-lg p-2"><span>🧴</span><span class="font-bold text-green-600" x-text="`${categoryTotals.daily}元`"></span></div>
+                                </div>
+                            </div>
+                            <div class="bg-red-100 rounded-xl p-3 flex-shrink-0">
+                                <div class="flex items-center justify-between"><span class="text-sm font-bold text-red-800">總計</span><span class="text-sm font-bold text-red-600" x-text="`${totalSpent}元`"></span></div>
+                                <div class="mt-2 text-xs text-red-600 text-center">佔預算比例：<span class="font-medium" x-text="`${percentage}%`"></span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                    <div class="h-2.5 rounded-full progress-bar" :style="`width: ${Math.min(percentage, 100)}%`" :class="{ 'bg-green-500': percentage < 50, 'bg-yellow-500': percentage >= 50 && percentage < 90, 'bg-red-500': percentage >= 90, 'pulse-red': percentage >= 100 }"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch min-h-[400px]">
                 <div class="h-full flex flex-col space-y-3">
                     <div class="bg-yellow-50 rounded-xl p-4 flex flex-col">
                         <div class="text-sm font-medium text-yellow-800 mb-3 text-center">個人資訊</div>
@@ -60,12 +165,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-red-50 rounded-xl p-3 flex-shrink-0">
-                        <div class="text-xs font-medium text-red-800 mb-2 text-center">花費提示</div>
-                        <div class="text-center"><div class="text-xs text-purple-600">24小時冷靜期提醒<br>避免衝動消費</div></div>
-                    </div>
                 </div>
-
                 <div class="character-animation text-center" :class="{ 'shake': level >= 7 }">
                     <div class="mb-4 space-y-2">
                         <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-3">
@@ -80,7 +180,6 @@
                         <img :src="currentCharacterImage" alt="Character Expression" class="max-w-full max-h-full object-contain">
                     </div>
                 </div>
-
                 <div class="h-full flex flex-col space-y-3">
                     <div class="bg-green-50 rounded-xl p-3">
                         <h3 class="text-sm font-bold text-green-800 text-center mb-3">花費統計</h3>
@@ -110,7 +209,7 @@
 
         <div class="bg-white rounded-3xl shadow-lg p-6 mt-8">
             <h3 class="text-sm font-bold text-purple-800 mb-4 text-center">💳 記錄花費</h3>
-            <div class="grid md:grid-cols-4 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <select x-model="newExpense.category" class="px-4 py-3 border-2 border-purple-200 rounded-2xl focus:border-purple-400 focus:outline-none">
                     <option value="">選擇類別</option>
                     <option value="food">🍽️ 餐飲</option>
@@ -148,7 +247,6 @@
                                 </div>
                             </div>
                         </template>
-
                         <template x-if="editingExpenseId === expense.id">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1 space-y-2">
@@ -167,4 +265,5 @@
         </div>
     </div>
 </body>
+
 </html>

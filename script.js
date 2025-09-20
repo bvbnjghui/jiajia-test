@@ -2,6 +2,9 @@
 
 function expenseTracker() {
     return {
+        // ✨ 新增：用於控制手機版 Tab 的狀態，'info' 是預設開啟的 Tab
+        activeTab: 'info', 
+
         // 狀態 (State)
         userName: '',
         dailyBudget: 0,
@@ -10,8 +13,8 @@ function expenseTracker() {
         categoryTotals: { food: 0, transport: 0, entertainment: 0, daily: 0 },
         userInput: { name: '', budget: null },
         newExpense: { category: '', description: '', amount: null },
-        editingExpenseId: null, // ✨ 新增：追蹤正在編輯的項目ID
-        editedExpense: { description: '', amount: null }, // ✨ 新增：暫存編輯中的資料
+        editingExpenseId: null,
+        editedExpense: { description: '', amount: null },
 
         // 靜態資料
         quotes: [
@@ -66,17 +69,13 @@ function expenseTracker() {
             this.newExpense.amount = null;
         },
 
-        // ✨ --- 以下為新增的函式 --- ✨
-
         // 刪除花費
         deleteExpense(id) {
             const index = this.expenses.findIndex(expense => expense.id === id);
             if (index > -1) {
                 const expenseToDelete = this.expenses[index];
-                // 更新總金額和分類金額
                 this.totalSpent -= expenseToDelete.amount;
                 this.categoryTotals[expenseToDelete.category] -= expenseToDelete.amount;
-                // 從陣列中移除
                 this.expenses.splice(index, 1);
             }
         },
@@ -84,7 +83,6 @@ function expenseTracker() {
         // 開始編輯
         editExpense(expense) {
             this.editingExpenseId = expense.id;
-            // 複製一份資料到暫存區，避免雙向綁定直接修改原資料
             this.editedExpense.description = expense.description;
             this.editedExpense.amount = expense.amount;
         },
@@ -100,15 +98,12 @@ function expenseTracker() {
                 const originalExpense = this.expenses[index];
                 const amountDifference = this.editedExpense.amount - originalExpense.amount;
                 
-                // 更新總金額和分類金額
                 this.totalSpent += amountDifference;
                 this.categoryTotals[originalExpense.category] += amountDifference;
 
-                // 更新該筆花費的資料
                 originalExpense.description = this.editedExpense.description;
                 originalExpense.amount = this.editedExpense.amount;
             }
-            // 結束編輯狀態
             this.cancelEdit();
         },
 
