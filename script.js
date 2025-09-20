@@ -29,7 +29,7 @@ function expenseTracker() {
         // 衍生狀態 (Getters)
         get remainingAmount() { return Math.max(0, this.dailyBudget - this.totalSpent) },
         get percentage() { return this.dailyBudget > 0 ? Math.round((this.totalSpent / this.dailyBudget) * 100) : 0 },
-        get level() { return Math.min(Math.floor(this.percentage / 10), 9) },
+        get level() { return Math.min(Math.floor(this.percentage / 10), 7) },
         get currentQuote() { return this.quotes[this.level] },
         get currentCharacterImage() {
             return Character.getImageByLevel(this.level);
