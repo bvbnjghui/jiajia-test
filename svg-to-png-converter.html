@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 轉 PNG 圖示生成器</title>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fef3c7, #fde68a, #f59e0b);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #7c3aed;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .preview {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .icon-preview {
+            display: inline-block;
+            width: 120px;
+            height: 120px;
+            margin: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .size-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .size-item h4 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        .size-preview {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .download-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .download-btn:hover {
+            background: #059669;
+        }
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .instructions {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #0369a1;
+            margin-top: 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 SVG 轉 PNG 圖示生成器</h1>
+        
+        <div class="preview">
+            <h3>原始 SVG 預覽</h3>
+            <div class="icon-preview">
+                <svg width="120" height="120" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="512" height="512" rx="80" ry="80" fill="url(#gradient)"/>
+                    <g transform="translate(256, 256)">
+                        <ellipse cx="0" cy="20" rx="80" ry="100" fill="white" opacity="0.9"/>
+                        <rect x="-60" y="-40" width="120" height="20" rx="10" ry="10" fill="white" opacity="0.9"/>
+                        <path d="M -40 -30 Q -40 -60 -20 -60 Q 0 -70 20 -60 Q 40 -60 40 -30" 
+                              stroke="white" stroke-width="8" fill="none" opacity="0.9"/>
+                        <text x="0" y="30" font-family="Arial, sans-serif" font-size="60" 
+                              text-anchor="middle" fill="url(#gradient)" font-weight="bold">¥</text>
+                        <g opacity="0.7">
+                            <polygon points="0,-120 8,-108 20,-108 12,-96 16,-84 0,-90 -16,-84 -12,-96 -20,-108 -8,-108" 
+                                     fill="white"/>
+                            <polygon points="-100,-80 -92,-68 -80,-68 -88,-56 -84,-44 -100,-50 -116,-44 -112,-56 -120,-68 -108,-68" 
+                                     fill="white"/>
+                            <polygon points="100,-80 108,-68 120,-68 112,-56 116,-44 100,-50 84,-44 88,-56 80,-68 92,-68" 
+                                     fill="white"/>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="generateAllIcons()" id="generateAllBtn">
+                🚀 生成所有圖示
+            </button>
+            <button class="btn" onclick="clearStatus()">
+                🗑️ 清除狀態
+            </button>
+        </div>
+
+        <div class="progress-bar" id="progressBar" style="display: none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <div class="size-grid">
+            <div class="size-item">
+                <h4>16x16</h4>
+                <div class="size-preview" id="preview-16"></div>
+                <button class="download-btn" onclick="generateIcon(16)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>32x32</h4>
+                <div class="size-preview" id="preview-32"></div>
+                <button class="download-btn" onclick="generateIcon(32)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>72x72</h4>
+                <div class="size-preview" id="preview-72"></div>
+                <button class="download-btn" onclick="generateIcon(72)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>96x96</h4>
+                <div class="size-preview" id="preview-96"></div>
+                <button class="download-btn" onclick="generateIcon(96)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>128x128</h4>
+                <div class="size-preview" id="preview-128"></div>
+                <button class="download-btn" onclick="generateIcon(128)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>144x144</h4>
+                <div class="size-preview" id="preview-144"></div>
+                <button class="download-btn" onclick="generateIcon(144)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>152x152</h4>
+                <div class="size-preview" id="preview-152"></div>
+                <button class="download-btn" onclick="generateIcon(152)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>192x192</h4>
+                <div class="size-preview" id="preview-192"></div>
+                <button class="download-btn" onclick="generateIcon(192)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>384x384</h4>
+                <div class="size-preview" id="preview-384"></div>
+                <button class="download-btn" onclick="generateIcon(384)">下載</button>
+            </div>
+            <div class="size-item">
+                <h4>512x512</h4>
+                <div class="size-preview" id="preview-512"></div>
+                <button class="download-btn" onclick="generateIcon(512)">下載</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 使用說明</h3>
+            <ol>
+                <li>點擊「🚀 生成所有圖示」按鈕一次性生成所有尺寸</li>
+                <li>或點擊個別尺寸的「下載」按鈕生成特定尺寸</li>
+                <li>將下載的 PNG 檔案放入專案的 <code>icons/</code> 資料夾</li>
+                <li>確保檔案名稱正確（如：icon-192x192.png）</li>
+                <li>重新整理您的 PWA 應用程式以載入新圖示</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        let generatedCount = 0;
+
+        // SVG 內容
+        const svgContent = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <rect width="512" height="512" rx="80" ry="80" fill="url(#gradient)"/>
+            <g transform="translate(256, 256)">
+                <ellipse cx="0" cy="20" rx="80" ry="100" fill="white" opacity="0.9"/>
+                <rect x="-60" y="-40" width="120" height="20" rx="10" ry="10" fill="white" opacity="0.9"/>
+                <path d="M -40 -30 Q -40 -60 -20 -60 Q 0 -70 20 -60 Q 40 -60 40 -30" 
+                      stroke="white" stroke-width="8" fill="none" opacity="0.9"/>
+                <text x="0" y="30" font-family="Arial, sans-serif" font-size="60" 
+                      text-anchor="middle" fill="url(#gradient)" font-weight="bold">¥</text>
+                <g opacity="0.7">
+                    <polygon points="0,-120 8,-108 20,-108 12,-96 16,-84 0,-90 -16,-84 -12,-96 -20,-108 -8,-108" 
+                             fill="white"/>
+                    <polygon points="-100,-80 -92,-68 -80,-68 -88,-56 -84,-44 -100,-50 -116,-44 -112,-56 -120,-68 -108,-68" 
+                             fill="white"/>
+                    <polygon points="100,-80 108,-68 120,-68 112,-56 116,-44 100,-50 84,-44 88,-56 80,-68 92,-68" 
+                             fill="white"/>
+                </g>
+            </g>
+        </svg>`;
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function updateProgress(current, total) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const percentage = (current / total) * 100;
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = `${percentage}%`;
+        }
+
+        function clearStatus() {
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        function generateIcon(size) {
+            try {
+                // 創建 canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                // 創建 Image 物件
+                const img = new Image();
+                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(svgBlob);
+                
+                img.onload = function() {
+                    // 繪製 SVG 到 canvas
+                    ctx.drawImage(img, 0, 0, size, size);
+                    
+                    // 轉換為 PNG 並下載
+                    canvas.toBlob(function(blob) {
+                        const link = document.createElement('a');
+                        link.download = `icon-${size}x${size}.png`;
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        
+                        // 清理 URL
+                        URL.revokeObjectURL(url);
+                        URL.revokeObjectURL(link.href);
+                        
+                        showStatus(`✅ 已生成 icon-${size}x${size}.png`, 'success');
+                    }, 'image/png');
+                };
+                
+                img.onerror = function() {
+                    showStatus(`❌ 生成 icon-${size}x${size}.png 失敗`, 'error');
+                    URL.revokeObjectURL(url);
+                };
+                
+                img.src = url;
+                
+            } catch (error) {
+                console.error('生成圖示時發生錯誤:', error);
+                showStatus(`❌ 生成圖示失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateAllIcons() {
+            const generateAllBtn = document.getElementById('generateAllBtn');
+            generateAllBtn.disabled = true;
+            generateAllBtn.textContent = '⏳ 生成中...';
+            
+            generatedCount = 0;
+            showStatus('🚀 開始生成所有圖示...', 'info');
+            
+            for (let i = 0; i < sizes.length; i++) {
+                const size = sizes[i];
+                try {
+                    await new Promise((resolve, reject) => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+                        
+                        const img = new Image();
+                        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                        const url = URL.createObjectURL(svgBlob);
+                        
+                        img.onload = function() {
+                            ctx.drawImage(img, 0, 0, size, size);
+                            canvas.toBlob(function(blob) {
+                                const link = document.createElement('a');
+                                link.download = `icon-${size}x${size}.png`;
+                                link.href = URL.createObjectURL(blob);
+                                link.click();
+                                
+                                URL.revokeObjectURL(url);
+                                URL.revokeObjectURL(link.href);
+                                
+                                generatedCount++;
+                                updateProgress(generatedCount, sizes.length);
+                                resolve();
+                            }, 'image/png');
+                        };
+                        
+                        img.onerror = function() {
+                            URL.revokeObjectURL(url);
+                            reject(new Error(`生成 ${size}x${size} 失敗`));
+                        };
+                        
+                        img.src = url;
+                    });
+                    
+                    // 等待一下避免瀏覽器阻擋多個下載
+                    if (i < sizes.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                } catch (error) {
+                    console.error(`生成 ${size}x${size} 圖示失敗:`, error);
+                }
+            }
+            
+            generateAllBtn.disabled = false;
+            generateAllBtn.textContent = '🚀 生成所有圖示';
+            showStatus(`🎉 完成！已生成 ${generatedCount}/${sizes.length} 個圖示檔案`, 'success');
+        }
+
+        // 初始化預覽
+        function initPreviews() {
+            sizes.forEach(size => {
+                const preview = document.getElementById(`preview-${size}`);
+                if (preview) {
+                    const scale = size / 64; // 預覽尺寸是 64x64
+                    preview.innerHTML = `<svg width="64" height="64" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="gradient-${size}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="512" height="512" rx="80" ry="80" fill="url(#gradient-${size})"/>
+                        <g transform="translate(256, 256)">
+                            <ellipse cx="0" cy="20" rx="80" ry="100" fill="white" opacity="0.9"/>
+                            <rect x="-60" y="-40" width="120" height="20" rx="10" ry="10" fill="white" opacity="0.9"/>
+                            <path d="M -40 -30 Q -40 -60 -20 -60 Q 0 -70 20 -60 Q 40 -60 40 -30" 
+                                  stroke="white" stroke-width="8" fill="none" opacity="0.9"/>
+                            <text x="0" y="30" font-family="Arial, sans-serif" font-size="60" 
+                                  text-anchor="middle" fill="url(#gradient-${size})" font-weight="bold">¥</text>
+                            <g opacity="0.7">
+                                <polygon points="0,-120 8,-108 20,-108 12,-96 16,-84 0,-90 -16,-84 -12,-96 -20,-108 -8,-108" 
+                                         fill="white"/>
+                                <polygon points="-100,-80 -92,-68 -80,-68 -88,-56 -84,-44 -100,-50 -116,-44 -112,-56 -120,-68 -108,-68" 
+                                         fill="white"/>
+                                <polygon points="100,-80 108,-68 120,-68 112,-56 116,-44 100,-50 84,-44 88,-56 80,-68 92,-68" 
+                                         fill="white"/>
+                            </g>
+                        </g>
+                    </svg>`;
+                }
+            });
+        }
+
+        // 頁面載入完成後初始化
+        window.addEventListener('load', () => {
+            initPreviews();
+            showStatus('📱 SVG 轉 PNG 圖示生成器已準備就緒！', 'info');
+        });
+    </script>
+</body>
+</html>
