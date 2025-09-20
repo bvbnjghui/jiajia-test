@@ -148,7 +148,7 @@
                         <span x-show="activeTab === 'character'">▲</span>
                     </button>
                     <div x-show="activeTab === 'character'" x-collapse class="p-2">
-                         <div class="character-animation text-center" :class="{ 'shake': level >= 7 }">
+                         <div class="character-animation text-center" :class="{ 'shake': level >= 7, 'panic': level >= 10 }">
                             <div class="mb-4 space-y-2">
                                 <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-3">
                                     <div class="text-purple-800 font-bold text-sm">
@@ -156,7 +156,31 @@
                                     </div>
                                     <div class="text-purple-600 text-xs">每日預算：<span x-text="dailyBudget" class="font-medium"></span> 元</div>
                                 </div>
-                                <div class="bg-yellow-100 rounded-xl p-2"><div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div></div>
+                                <div class="bg-yellow-100 rounded-xl p-2">
+                                    <div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div>
+                                </div>
+                                <!-- 角色狀態指示器 -->
+                                <div class="bg-white rounded-xl p-2 border-2" 
+                                     :class="{
+                                         'border-green-200 bg-green-50': characterStatus.color === 'green',
+                                         'border-yellow-200 bg-yellow-50': characterStatus.color === 'yellow',
+                                         'border-orange-200 bg-orange-50': characterStatus.color === 'orange',
+                                         'border-red-200 bg-red-50': characterStatus.color === 'red',
+                                         'border-purple-200 bg-purple-50': characterStatus.color === 'purple'
+                                     }">
+                                    <div class="text-xs font-bold" 
+                                         :class="{
+                                             'text-green-700': characterStatus.color === 'green',
+                                             'text-yellow-700': characterStatus.color === 'yellow',
+                                             'text-orange-700': characterStatus.color === 'orange',
+                                             'text-red-700': characterStatus.color === 'red',
+                                             'text-purple-700': characterStatus.color === 'purple'
+                                         }">
+                                        <span x-text="characterStatus.emoji"></span> 
+                                        <span x-text="characterStatus.status"></span>
+                                        <span x-show="percentage > 100" class="text-red-600"> (超支 <span x-text="percentage"></span>%)</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="relative inline-block flex items-center justify-center">
                                 <img :src="currentCharacterImage" alt="Character Expression" class="max-w-full max-h-full object-contain">
@@ -236,7 +260,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="character-animation text-center" :class="{ 'shake': level >= 7 }">
+                <div class="character-animation text-center" :class="{ 'shake': level >= 7, 'panic': level >= 10 }">
                     <div class="mb-4 space-y-2">
                         <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-3">
                             <div class="text-purple-800 font-bold text-sm">
@@ -244,7 +268,31 @@
                             </div>
                             <div class="text-purple-600 text-xs">每日預算：<span x-text="dailyBudget" class="font-medium"></span> 元</div>
                         </div>
-                        <div class="bg-yellow-100 rounded-xl p-2"><div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div></div>
+                        <div class="bg-yellow-100 rounded-xl p-2">
+                            <div class="text-orange-600 text-xs font-medium">☀️ 美好的一天就從早餐開始！</div>
+                        </div>
+                        <!-- 角色狀態指示器 -->
+                        <div class="bg-white rounded-xl p-2 border-2" 
+                             :class="{
+                                 'border-green-200 bg-green-50': characterStatus.color === 'green',
+                                 'border-yellow-200 bg-yellow-50': characterStatus.color === 'yellow',
+                                 'border-orange-200 bg-orange-50': characterStatus.color === 'orange',
+                                 'border-red-200 bg-red-50': characterStatus.color === 'red',
+                                 'border-purple-200 bg-purple-50': characterStatus.color === 'purple'
+                             }">
+                            <div class="text-xs font-bold" 
+                                 :class="{
+                                     'text-green-700': characterStatus.color === 'green',
+                                     'text-yellow-700': characterStatus.color === 'yellow',
+                                     'text-orange-700': characterStatus.color === 'orange',
+                                     'text-red-700': characterStatus.color === 'red',
+                                     'text-purple-700': characterStatus.color === 'purple'
+                                 }">
+                                <span x-text="characterStatus.emoji"></span> 
+                                <span x-text="characterStatus.status"></span>
+                                <span x-show="percentage > 100" class="text-red-600"> (超支 <span x-text="percentage"></span>%)</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="relative inline-block flex items-center justify-center">
                         <img :src="currentCharacterImage" alt="Character Expression" class="max-w-full max-h-full object-contain">

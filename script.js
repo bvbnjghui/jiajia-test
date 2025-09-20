@@ -29,7 +29,8 @@ function expenseTracker() {
         quotes: [
             "打工賺錢不容易，每一分錢都要精打細算。", "偶爾花點錢犒賞自己，這是應該的。", "嗯...花費有點超出預期，需要控制一下。",
             "這個消費速度有點快，得重新檢視預算。", "情況開始不妙，這個月可能會很緊。", "必須冷靜下來，不能再這樣亂花錢了。",
-            "糟糕，照這樣下去會入不敷出。", "完了，生活費都快不夠了。", "這下真的麻煩了，錢包快見底了。", "徹底破產，連基本生活都成問題了。"
+            "糟糕，照這樣下去會入不敷出。", "完了，生活費都快不夠了。", "這下真的麻煩了，錢包快見底了。", "徹底破產，連基本生活都成問題了。",
+            "天啊！已經嚴重超支了！", "救命！這樣下去真的會完蛋！", "緊急狀態！必須立即停止消費！"
         ],
         categoryMeta: {
             food: { icon: '🍽️', name: '餐飲' },
@@ -41,10 +42,31 @@ function expenseTracker() {
         // 衍生狀態 (Getters)
         get remainingAmount() { return Math.max(0, this.dailyBudget - this.totalSpent) },
         get percentage() { return this.dailyBudget > 0 ? Math.round((this.totalSpent / this.dailyBudget) * 100) : 0 },
-        get level() { return Math.min(Math.floor(this.percentage / 10), 7) },
-        get currentQuote() { return this.quotes[this.level] },
+        get level() { 
+            // 擴展等級系統，支援超過100%的情況
+            if (this.percentage <= 0) return 0;
+            if (this.percentage <= 10) return 1;
+            if (this.percentage <= 20) return 2;
+            if (this.percentage <= 30) return 3;
+            if (this.percentage <= 40) return 4;
+            if (this.percentage <= 50) return 5;
+            if (this.percentage <= 60) return 6;
+            if (this.percentage <= 70) return 7;
+            if (this.percentage <= 80) return 8;
+            if (this.percentage <= 90) return 9;
+            if (this.percentage <= 100) return 10;
+            // 超過100%的情況
+            return 11;
+        },
+        get currentQuote() { 
+            const quoteIndex = Math.min(this.level, this.quotes.length - 1);
+            return this.quotes[quoteIndex];
+        },
         get currentCharacterImage() {
-            return Character.getImageByLevel(this.level);
+            return Character.getImageByPercentage(this.percentage);
+        },
+        get characterStatus() {
+            return Character.getCharacterStatus(this.percentage);
         },
 
         // 方法 (Actions)

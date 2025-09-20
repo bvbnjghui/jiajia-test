@@ -50,6 +50,25 @@ body {
     }
 }
 
+.panic {
+    animation: panic 1s ease-in-out infinite;
+}
+
+@keyframes panic {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.05) rotate(-2deg);
+    }
+    50% {
+        transform: scale(1.1) rotate(0deg);
+    }
+    75% {
+        transform: scale(1.05) rotate(2deg);
+    }
+}
+
 .pulse-red {
     animation: pulseRed 1s infinite;
 }
