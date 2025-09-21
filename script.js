@@ -265,6 +265,9 @@ function expenseTracker() {
 
         // PWA 相關功能
         initPWA() {
+            if (window.pwaInitialized) return;
+            window.pwaInitialized = true;
+
             if ('serviceWorker' in navigator) {
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -276,7 +279,6 @@ function expenseTracker() {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js')
                         .then(registration => {
-                            console.log('SW registered: ', registration);
                             this.checkForUpdates(registration);
                         })
                         .catch(registrationError => {
