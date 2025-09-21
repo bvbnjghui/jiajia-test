@@ -263,6 +263,13 @@ function expenseTracker() {
         // PWA 相關功能
         initPWA() {
             if ('serviceWorker' in navigator) {
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    refreshing = true;
+                    window.location.reload();
+                });
+
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js')
                         .then(registration => {
@@ -328,7 +335,6 @@ function expenseTracker() {
                 navigator.serviceWorker.getRegistration().then(registration => {
                     if (registration && registration.waiting) {
                         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                        window.location.reload();
                     }
                 });
             }
