@@ -1,11 +1,13 @@
 // script.js
 
 function expenseTracker() {
-    return {
-        // ✨ 新增：用於控制手機版 Tab 的狀態，'info' 是預設開啟的 Tab
-        activeTab: 'info', 
+    // --- Google API Configuration ---
+    const CLIENT_ID = '1066473322934-ah4ib6b0pfvisb5ide4t1gj5s7up6uag.apps.googleusercontent.com';
+    const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
+    const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
-        // 狀態 (State)
+    return {
+        activeTab: 'info',
         userName: '',
         dailyBudget: 0,
         totalSpent: 0,
@@ -19,11 +21,48 @@ function expenseTracker() {
         showInstallButton: false,
         deferredPrompt: null,
         mobileCharacterExpanded: false,
+        
+        // ✨ Google API/GIS 相關狀態
+        isGapiLoaded: false,
+        isGisLoaded: false,
+        isSignedIn: false,
+        tokenClient: null,
 
-        // 初始化 - 從本地儲存載入資料
+        // 初始化
         init() {
             this.loadFromStorage();
             this.initPWA();
+            this.loadGoogleScripts();
+        },
+
+        loadGoogleScripts() {
+            const gapiScript = document.createElement('script');
+            gapiScript.src = 'https://apis.google.com/js/api.js';
+            gapiScript.async = true;
+            gapiScript.defer = true;
+            gapiScript.onload = () => {
+                gapi.load('client', () => {
+                    gapi.client.init({ discoveryDocs: DISCOVERY_DOCS })
+                        .then(() => {
+                            this.isGapiLoaded = true;
+                        });
+                });
+            };
+            document.head.appendChild(gapiScript);
+
+            const gisScript = document.createElement('script');
+            gisScript.src = 'https://accounts.google.com/gsi/client';
+            gisScript.async = true;
+            gisScript.defer = true;
+            gisScript.onload = () => {
+                this.tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: this.handleTokenResponse.bind(this),
+                });
+                this.isGisLoaded = true;
+            };
+            document.head.appendChild(gisScript);
         },
 
         // 靜態資料
@@ -44,7 +83,6 @@ function expenseTracker() {
         get remainingAmount() { return Math.max(0, this.dailyBudget - this.totalSpent) },
         get percentage() { return this.dailyBudget > 0 ? Math.round((this.totalSpent / this.dailyBudget) * 100) : 0 },
         get level() { 
-            // 擴展等級系統，支援超過100%的情況
             if (this.percentage <= 0) return 0;
             if (this.percentage <= 10) return 1;
             if (this.percentage <= 20) return 2;
@@ -56,7 +94,6 @@ function expenseTracker() {
             if (this.percentage <= 80) return 8;
             if (this.percentage <= 90) return 9;
             if (this.percentage <= 100) return 10;
-            // 超過100%的情況
             return 11;
         },
         get currentQuote() { 
@@ -119,7 +156,6 @@ function expenseTracker() {
             this.showNotification('花費記錄已新增！', 'success');
         },
 
-        // 刪除花費
         deleteExpense(id) {
             if (confirm('確定要刪除這筆花費記錄嗎？')) {
                 const index = this.expenses.findIndex(expense => expense.id === id);
@@ -134,14 +170,12 @@ function expenseTracker() {
             }
         },
 
-        // 開始編輯
         editExpense(expense) {
             this.editingExpenseId = expense.id;
             this.editedExpense.description = expense.description;
             this.editedExpense.amount = expense.amount;
         },
 
-        // 更新花費
         updateExpense() {
             if (!this.editedExpense.description.trim()) {
                 this.showNotification('請輸入花費描述', 'error');
@@ -167,14 +201,12 @@ function expenseTracker() {
             this.cancelEdit();
         },
 
-        // 取消編輯
         cancelEdit() {
             this.editingExpenseId = null;
             this.editedExpense.description = '';
             this.editedExpense.amount = null;
         },
 
-        // 本地儲存相關方法
         saveToStorage() {
             const data = {
                 userName: this.userName,
@@ -215,12 +247,13 @@ function expenseTracker() {
             }
         },
 
-        // 通知系統
-        showNotification(message, type = 'info') {
+        showNotification(message, type = 'info', duration = 3000) {
             this.notification = { show: true, message, type };
-            setTimeout(() => {
-                this.notification.show = false;
-            }, 3000);
+            if (duration > 0) {
+                setTimeout(() => {
+                    this.notification.show = false;
+                }, duration);
+            }
         },
 
         hideNotification() {
@@ -229,7 +262,6 @@ function expenseTracker() {
 
         // PWA 相關功能
         initPWA() {
-            // 註冊 Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js')
@@ -242,25 +274,17 @@ function expenseTracker() {
                         });
                 });
             }
-
-            // 監聽安裝提示
             this.setupInstallPrompt();
         },
 
         setupInstallPrompt() {
             let deferredPrompt;
-            
             window.addEventListener('beforeinstallprompt', (e) => {
-                // 防止瀏覽器預設的安裝提示
                 e.preventDefault();
                 deferredPrompt = e;
-                
-                // 顯示自定義安裝按鈕
                 this.showInstallButton = true;
                 this.deferredPrompt = deferredPrompt;
             });
-
-            // 監聽應用程式安裝完成
             window.addEventListener('appinstalled', (evt) => {
                 console.log('PWA 已安裝');
                 this.showInstallButton = false;
@@ -272,13 +296,11 @@ function expenseTracker() {
             if (this.deferredPrompt) {
                 this.deferredPrompt.prompt();
                 const { outcome } = await this.deferredPrompt.userChoice;
-                
                 if (outcome === 'accepted') {
                     this.showNotification('正在安裝應用程式...', 'info');
                 } else {
                     this.showNotification('安裝已取消', 'info');
                 }
-                
                 this.deferredPrompt = null;
                 this.showInstallButton = false;
             }
@@ -289,7 +311,6 @@ function expenseTracker() {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // 有新版本可用
                         this.showUpdateNotification();
                     }
                 });
@@ -313,53 +334,115 @@ function expenseTracker() {
             }
         },
 
-        // 檢查是否為 PWA 模式
         get isPWA() {
-            return window.matchMedia('(display-mode: standalone)').matches || 
-                   window.navigator.standalone === true;
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         },
 
-        // 檢查網路狀態
         get isOnline() {
             return navigator.onLine;
         },
 
-        // 匯出資料功能
-        exportData() {
+        // --- Google Sheets Integration (GIS) ---
+        handleAuthClick() {
+            if (this.tokenClient) {
+                this.tokenClient.requestAccessToken({ prompt: 'consent' });
+            }
+        },
+
+        handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken('');
+                    this.isSignedIn = false;
+                    this.showNotification('您已成功登出', 'success');
+                });
+            }
+        },
+
+        handleTokenResponse(response) {
+            if (response && response.access_token) {
+                gapi.client.setToken(response);
+                this.isSignedIn = true;
+                this.showNotification('Google 登入成功！正在準備匯出...', 'info');
+                this.performExport();
+            } else {
+                console.error('Provided token response was invalid.', response);
+            }
+        },
+
+        exportToSheet() {
+            if (this.isSignedIn) {
+                this.performExport();
+            } else {
+                this.handleAuthClick();
+            }
+        },
+
+        performExport() {
             if (this.expenses.length === 0) {
                 this.showNotification('沒有資料可以匯出', 'error');
                 return;
             }
+            this.showNotification('正在建立 Google Sheet 並匯出資料...', 'info', 0);
 
-            const exportData = {
-                userName: this.userName,
-                dailyBudget: this.dailyBudget,
-                totalSpent: this.totalSpent,
-                remainingAmount: this.remainingAmount,
-                percentage: this.percentage,
-                categoryTotals: this.categoryTotals,
-                expenses: this.expenses,
-                exportDate: new Date().toISOString(),
-                summary: {
-                    totalExpenses: this.expenses.length,
-                    averageExpense: this.expenses.length > 0 ? Math.round(this.totalSpent / this.expenses.length) : 0,
-                    mostExpensiveCategory: Object.keys(this.categoryTotals).reduce((a, b) => 
-                        this.categoryTotals[a] > this.categoryTotals[b] ? a : b, 'food')
+            const spreadsheetTitle = `花費記錄_${this.userName || '使用者'}_${new Date().toISOString().split('T')[0]}`;
+
+            gapi.client.sheets.spreadsheets.create({
+                properties: {
+                    title: spreadsheetTitle
                 }
-            };
+            }).then((response) => {
+                const spreadsheetId = response.result.spreadsheetId;
+                const spreadsheetUrl = response.result.spreadsheetUrl;
 
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `花費記錄_${this.userName || '使用者'}_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            this.showNotification('資料匯出成功！', 'success');
+                const summaryData = [
+                    ['報表生成時間', new Date().toLocaleString('zh-TW')],
+                    ['使用者名稱', this.userName],
+                    ['每日預算', this.dailyBudget],
+                    ['總花費', this.totalSpent],
+                    ['剩餘預算', this.remainingAmount],
+                    ['預算使用率 (%)', this.percentage],
+                    [],
+                    ['分類統計'],
+                    ['餐飲', this.categoryTotals.food],
+                    ['交通', this.categoryTotals.transport],
+                    ['娛樂', this.categoryTotals.entertainment],
+                    ['日用品', this.categoryTotals.daily],
+                ];
+
+                const expensesHeader = ['日期', '類別', '描述', '金額'];
+                const expensesRows = this.expenses.map(e => [
+                    new Date(e.timestamp).toLocaleString('zh-TW'),
+                    e.categoryName,
+                    e.description,
+                    e.amount
+                ]);
+
+                const data = [
+                    { range: 'A1', values: summaryData },
+                    { range: 'A15', values: [expensesHeader, ...expensesRows] }
+                ];
+
+                gapi.client.sheets.spreadsheets.values.batchUpdate({
+                    spreadsheetId: spreadsheetId,
+                    resource: {
+                        valueInputOption: 'USER_ENTERED',
+                        data: data
+                    }
+                }).then(() => {
+                    this.hideNotification();
+                    const message = `資料匯出成功！點擊 <a href="${spreadsheetUrl}" target="_blank" class="font-bold underline">這裡</a> 查看您的 Google Sheet。`;
+                    this.showNotification(message, 'success', 10000);
+                }).catch((err) => {
+                    console.error('Error writing to sheet:', err);
+                    this.showNotification(`寫入 Google Sheet 失敗: ${err.result.error.message}`, 'error', 0);
+                });
+
+            }).catch((err) => {
+                console.error('Error creating spreadsheet:', err);
+                this.showNotification(`建立 Google Sheet 失敗: ${err.result.error.message}`, 'error', 0);
+            });
         },
 
         // 匯出 CSV 格式
@@ -375,7 +458,7 @@ function expenseTracker() {
                 ...this.expenses.map(expense => [
                     new Date(expense.timestamp).toLocaleDateString('zh-TW'),
                     expense.categoryName,
-                    `"${expense.description}"`,
+                    `"${expense.description}"`, 
                     expense.amount
                 ].join(','))
             ].join('\n');

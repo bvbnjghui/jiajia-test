@@ -55,7 +55,7 @@
                      'bg-blue-100 border border-blue-200 text-blue-800': notification.type === 'info'
                  }">
                 <div class="flex items-center justify-between">
-                    <span x-text="notification.message"></span>
+                    <span x-html="notification.message"></span>
                     <button @click="hideNotification()" class="ml-2 text-lg">&times;</button>
                 </div>
             </div>
@@ -483,7 +483,20 @@
                 <h3 class="text-sm font-bold text-purple-800">📝 今日花費記錄</h3>
                 <div class="flex gap-2">
                     <button @click="exportCSV()" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none">📊 匯出 CSV</button>
-                    <button @click="exportData()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none">💾 匯出 JSON</button>
+                    
+                    <!-- Google Sheets Export -->
+                    <template x-if="isGapiLoaded && isGisLoaded">
+                        <div>
+                            <button x-show="!isSignedIn" @click="handleAuthClick()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none">🚀 登入並匯出至 Google Sheet</button>
+                            <div x-show="isSignedIn" class="flex gap-2">
+                                <button @click="exportToSheet()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none">🚀 匯出至 Google Sheet</button>
+                                <button @click="handleSignoutClick()" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none">登出</button>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="!isGapiLoaded || !isGisLoaded">
+                        <button class="bg-gray-400 text-white px-3 py-1 rounded-lg text-xs transition-all flex-1 md:flex-none" disabled>正在載入 Google API...</button>
+                    </template>
                 </div>
             </div>
             <div class="space-y-2">
@@ -527,6 +540,9 @@
                 </template>
             </div>
         </div>
+    <footer class="text-center py-6">
+            <a href="./privacy-policy.html" class="text-sm text-purple-600 hover:text-purple-800 underline">隱私權政策</a>
+        </footer>
     </div>
 </body>
 
