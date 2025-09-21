@@ -60,6 +60,7 @@ function expenseTracker() {
                     client_id: CLIENT_ID,
                     scope: SCOPES,
                     callback: this.handleTokenResponse.bind(this),
+                    error_callback: this.handleTokenError.bind(this),
                 });
                 this.isGisLoaded = true;
             };
@@ -376,6 +377,13 @@ function expenseTracker() {
                 this.performExport();
             } else {
                 console.error('Provided token response was invalid.', response);
+            }
+        },
+
+        handleTokenError(error) {
+            console.error('Google Auth Error:', error);
+            if (error && (error.type === 'popup_closed' || error.type === 'popup_failed_to_open')) {
+                this.showNotification('登入視窗被您的瀏覽器或廣告攔截器擋下了。請允許本站的彈出式視窗，或將本站加入白名單後再試一次。', 'error', 0);
             }
         },
 
