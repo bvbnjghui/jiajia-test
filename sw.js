@@ -1,7 +1,7 @@
 // Service Worker for 花費追蹤器 PWA
-const CACHE_NAME = 'expense-tracker-v1.0.6';
-const STATIC_CACHE_NAME = 'expense-tracker-static-v1.0.6';
-const DYNAMIC_CACHE_NAME = 'expense-tracker-dynamic-v1.0.6';
+const CACHE_NAME = 'expense-tracker-v1.0.8';
+const STATIC_CACHE_NAME = 'expense-tracker-static-v1.0.8';
+const DYNAMIC_CACHE_NAME = 'expense-tracker-dynamic-v1.0.8';
 
 // 需要快取的靜態資源
 const STATIC_ASSETS = [

@@ -18,6 +18,7 @@ function expenseTracker() {
         editingExpenseId: null,
         editedExpense: { description: '', amount: null },
         notification: { show: false, message: '', type: 'info' },
+        notificationTimeout: null,
         showInstallButton: false,
         deferredPrompt: null,
         mobileCharacterExpanded: false,
@@ -248,9 +249,10 @@ function expenseTracker() {
         },
 
         showNotification(message, type = 'info', duration = 3000) {
+            clearTimeout(this.notificationTimeout);
             this.notification = { show: true, message, type };
             if (duration > 0) {
-                setTimeout(() => {
+                this.notificationTimeout = setTimeout(() => {
                     this.notification.show = false;
                 }, duration);
             }
@@ -439,7 +441,7 @@ function expenseTracker() {
                 }).then(() => {
                     this.hideNotification();
                     const message = `資料匯出成功！點擊 <a href="${spreadsheetUrl}" target="_blank" class="font-bold underline">這裡</a> 查看您的 Google Sheet。`;
-                    this.showNotification(message, 'success', 10000);
+                    this.showNotification(message, 'success', 0);
                 }).catch((err) => {
                     console.error('Error writing to sheet:', err);
                     this.showNotification(`寫入 Google Sheet 失敗: ${err.result.error.message}`, 'error', 0);
