@@ -4,7 +4,7 @@ function expenseTracker() {
     // --- Google API Configuration ---
     const CLIENT_ID = '1066473322934-ah4ib6b0pfvisb5ide4t1gj5s7up6uag.apps.googleusercontent.com';
     const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4"];
-    const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+    const SCOPES = "https://www.googleapis.com/auth/drive.file";
 
     return {
         activeTab: 'info',
